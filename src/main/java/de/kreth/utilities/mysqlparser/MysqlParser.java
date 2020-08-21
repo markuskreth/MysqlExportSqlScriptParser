@@ -40,7 +40,10 @@ public class MysqlParser {
 	}
 
 	private boolean doIncludeLine(String line) {
-		return true;
+		String trimmed = line.trim().toLowerCase();
+		boolean result = !trimmed.contains("create database  if not exists");
+		result &= !trimmed.startsWith("use");
+		return result;
 	}
 
 	private class UncheckedBufferedWriter extends BufferedWriter {

@@ -1,6 +1,8 @@
 package de.kreth.utilities.mysqlparser;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 
 import java.io.BufferedReader;
@@ -11,40 +13,42 @@ import java.io.StringWriter;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.kreth.utilities.mysqlparser.config.TestParameters;
 
 public class MyqlParserTest {
 
-	private static String sqlConent;
+	private static String result;
 
 	@BeforeAll
 	static void loadTestText() throws IOException {
 		try (BufferedReader in = new BufferedReader(
 				new InputStreamReader(MyqlParserTest.class.getResourceAsStream("/clubhelper_test-Original.sql")))) {
-			sqlConent = in.lines().collect(Collectors.joining(System.lineSeparator()));
+			String sqlConent = in.lines().collect(Collectors.joining(System.lineSeparator()));
+
+			StringReader reader = new StringReader(sqlConent);
+			StringWriter writer = new StringWriter();
+			TestParameters parameters = new TestParameters(reader, writer);
+			MysqlParser parser = new MysqlParser(parameters);
+			parser.start();
+			result = writer.toString();
 		}
 	}
 
-	private StringReader reader;
-	private StringWriter writer;
-	private MysqlParser parser;
-
-	@BeforeEach
-	void initParser() {
-		reader = new StringReader(sqlConent);
-		writer = new StringWriter();
-		TestParameters parameters = new TestParameters(reader, writer);
-		parser = new MysqlParser(parameters);
+	@Test
+	void relevantLinesArePresent() {
+		assertNoContentLost(result);
 	}
 
 	@Test
-	void testRemoveCreateAndUse() {
-		parser.start();
-		String result = writer.toString();
-		assertNoContentLost(result);
+	void testRemoveCreate() {
+		assertThat(result, not(containsString("CREATE DATABASE  IF NOT EXISTS")));
+	}
+
+	@Test
+	void testRemoveUse() {
+		assertThat(result, not(containsString("USE `clubhelper`;")));
 	}
 
 	private void assertNoContentLost(String result) {
