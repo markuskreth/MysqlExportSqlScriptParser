@@ -41,8 +41,9 @@ public class MysqlParser {
 
 	private boolean doIncludeLine(String line) {
 		String trimmed = line.trim().toLowerCase();
-		boolean result = !trimmed.contains("create database  if not exists");
-		result &= !trimmed.startsWith("use");
+		LineMustNotContainMatcher m = new LineMustNotContainMatcher("create database  if not exists");
+		boolean result = m.test(trimmed);
+		result &= new LineMustNotStartWithMatcher("use").test(trimmed);
 		return result;
 	}
 
