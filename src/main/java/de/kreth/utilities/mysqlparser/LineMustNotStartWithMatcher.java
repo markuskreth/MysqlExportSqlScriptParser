@@ -1,10 +1,8 @@
 package de.kreth.utilities.mysqlparser;
 
-import java.util.function.Predicate;
+public class LineMustNotStartWithMatcher implements LineMatcher {
 
-public class LineMustNotStartWithMatcher implements Predicate<String> {
-
-	private final String disallowedLineStart;
+	final String disallowedLineStart;
 
 	public LineMustNotStartWithMatcher(String disallowedLineStart) {
 		super();

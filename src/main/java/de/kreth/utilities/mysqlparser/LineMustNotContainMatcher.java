@@ -1,8 +1,6 @@
 package de.kreth.utilities.mysqlparser;
 
-import java.util.function.Predicate;
-
-public class LineMustNotContainMatcher implements Predicate<String> {
+public class LineMustNotContainMatcher implements LineMatcher {
 
 	private final String disallowedContent;
 
