@@ -5,6 +5,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +21,14 @@ public class MysqlParser {
 	private Parameters parms;
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
+	private final List<Predicate<String>> tests;
+
 	MysqlParser(Parameters parms) {
 		this.parms = parms;
+
+		LineMustNotContainMatcher m = new LineMustNotContainMatcher("create database  if not exists");
+		LineMustNotStartWithMatcher m2 = new LineMustNotStartWithMatcher("use");
+		tests = Collections.unmodifiableList(Arrays.asList(m, m2));
 	}
 
 	public static void main(String[] args) {
@@ -41,9 +52,12 @@ public class MysqlParser {
 
 	private boolean doIncludeLine(String line) {
 		String trimmed = line.trim().toLowerCase();
-		LineMustNotContainMatcher m = new LineMustNotContainMatcher("create database  if not exists");
-		boolean result = m.test(trimmed);
-		result &= new LineMustNotStartWithMatcher("use").test(trimmed);
+		Iterator<Predicate<String>> iterator = tests.iterator();
+
+		boolean result = true;
+		while (result && iterator.hasNext()) {
+			result &= iterator.next().test(trimmed);
+		}
 		return result;
 	}
 
