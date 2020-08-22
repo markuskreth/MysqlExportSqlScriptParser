@@ -11,6 +11,7 @@
 		<java.version>11</java.version>
 		<junit-jupiter.version>5.5.2</junit-jupiter.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sonar.projectKey>89824ec6ade92e23ccae6f2d7d573ea84eff3f4d</sonar.projectKey>
 	</properties>
 
 
@@ -37,12 +38,6 @@
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-library</artifactId>
 			<version>2.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.200</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

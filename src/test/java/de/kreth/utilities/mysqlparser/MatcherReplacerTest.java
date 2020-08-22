@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+import de.kreth.utilities.mysqlparser.matcher.LineMustNotContainIgnoreCaseMatcher;
+import de.kreth.utilities.mysqlparser.matcher.MatcherLineReplacer;
+
 class MatcherReplacerTest {
 
     @Test

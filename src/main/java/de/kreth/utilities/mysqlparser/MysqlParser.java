@@ -1,10 +1,7 @@
 package de.kreth.utilities.mysqlparser;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.kreth.utilities.mysqlparser.config.Parameters;
+import de.kreth.utilities.mysqlparser.matcher.AndMatcher;
+import de.kreth.utilities.mysqlparser.matcher.LineMatcher;
+import de.kreth.utilities.mysqlparser.matcher.LineMustNotContainIgnoreCaseMatcher;
+import de.kreth.utilities.mysqlparser.matcher.LineMustNotContainMatcher;
+import de.kreth.utilities.mysqlparser.matcher.LineMustNotStartWithMatcher;
+import de.kreth.utilities.mysqlparser.matcher.LineReplacer;
+import de.kreth.utilities.mysqlparser.matcher.MatcherLineReplacer;
 
 public class MysqlParser {
 
@@ -47,7 +51,7 @@ public class MysqlParser {
     }
 
     public void start() {
-	logger.debug("Start logging with source={} and target={}", parms.getSource(), parms.getTarget());
+	logger.debug("Start parsing with source={} and target={}", parms.getSource(), parms.getTarget());
 	try (BufferedReader input = new BufferedReader(parms.createReader())) {
 	    try (UncheckedBufferedWriter out = new UncheckedBufferedWriter(parms.createWriter())) {
 		input.lines()
@@ -80,20 +84,5 @@ public class MysqlParser {
 	    result &= iterator.next().test(trimmed);
 	}
 	return result;
-    }
-
-    private class UncheckedBufferedWriter extends BufferedWriter {
-
-	public UncheckedBufferedWriter(Writer out) {
-	    super(out);
-	}
-
-	public void appendLineUnchecked(CharSequence line) {
-	    try {
-		append(line).append(System.lineSeparator());
-	    } catch (IOException e) {
-		throw new UncheckedIOException("Error writing line \"" + line + "\"", e);
-	    }
-	}
     }
 }

@@ -1,4 +1,4 @@
-package de.kreth.utilities.mysqlparser;
+package de.kreth.utilities.mysqlparser.matcher;
 
 public class LineMustNotStartWithMatcher implements LineMatcher {
 

@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.kreth.utilities.mysqlparser.matcher.AndMatcher;
+import de.kreth.utilities.mysqlparser.matcher.LineMustNotContainMatcher;
+
 public class AndMatcherTest {
 
 	private AndMatcher matcher;
