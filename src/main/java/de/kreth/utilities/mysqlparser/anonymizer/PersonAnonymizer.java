@@ -1,5 +1,7 @@
 package de.kreth.utilities.mysqlparser.anonymizer;
 
+import java.util.Calendar;
+
 import de.kreth.utilities.mysqlparser.anonymizer.Testdata.Person;
 
 public class PersonAnonymizer extends AbstractAnonymizer {
@@ -21,13 +23,16 @@ public class PersonAnonymizer extends AbstractAnonymizer {
     }
 
     private String anonymizeBirthday(String modified, Person randomizedPerson) {
-//	CharRange index = indexOfStringValue(modified, 2);
-//	return replace(modified, index, randomizedPerson.age);
-	return modified;
+	int birthYear = Calendar.getInstance().get(Calendar.YEAR) - randomizedPerson.age;
+	CharRange index = indexOfStringValue(modified, 2);
+	String lineValue = getValue(modified, index);
+
+	String replacement = birthYear + lineValue.substring(4);
+	return replace(modified, index, replacement);
     }
 
     private String anonymizeLastName(String modified, Person randomizedPerson) {
-	CharRange index = indexOfStringValue(modified, 0);
+	CharRange index = indexOfStringValue(modified, 1);
 	return replace(modified, index, randomizedPerson.lastname);
     }
 

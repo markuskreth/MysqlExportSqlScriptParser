@@ -33,6 +33,10 @@ public abstract class AbstractAnonymizer implements LineAnonymizer {
 	return newLine.toString();
     }
 
+    String getValue(String line, CharRange range) {
+	return line.substring(range.start, range.end);
+    }
+
     class CharRange {
 	int start;
 	int end;
