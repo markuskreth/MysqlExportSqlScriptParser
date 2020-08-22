@@ -47,6 +47,22 @@ public class MyqlParserTest {
 	}
 
 	@Test
+	void testRemoveHostDatabase() {
+		assertThat(result, not(containsString("-- Host: 127.0.0.1    Database: clubhelper")));
+	}
+
+	@Test
+	void testRemoveSetters() {
+		assertThat(result, not(containsString("40101 SET @OLD_CHARACTER_SET_CLIENT")));
+		assertThat(result, not(containsString("@OLD_CHARACTER_SET_RESULTS")));
+		assertThat(result, not(containsString("NAMES utf8")));
+		assertThat(result, not(containsString("@OLD_SQL_NOTES=")));
+		assertThat(result, not(containsString("40101 SET @saved_cs_client")));
+		assertThat(result, not(containsString("SET character_set_client")));
+
+	}
+
+	@Test
 	void testRemoveUse() {
 		assertThat(result, not(containsString("USE `clubhelper`;")));
 	}

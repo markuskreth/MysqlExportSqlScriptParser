@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -17,61 +18,82 @@ import de.kreth.utilities.mysqlparser.config.Parameters;
 
 public class MysqlParser {
 
-	private Parameters parms;
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+    private Parameters parms;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	private final List<LineMatcher> tests;
+    private final List<LineMatcher> tests;
+    private final List<LineReplacer> replacers;
 
-	MysqlParser(Parameters parms) {
-		this.parms = parms;
-		LineMustNotContainIgnoreCaseMatcher m = new LineMustNotContainIgnoreCaseMatcher(
-				"create database  if not exists");
-		LineMustNotStartWithMatcher m2 = new LineMustNotStartWithMatcher("use");
+    MysqlParser(Parameters parms) {
+	this.parms = parms;
 
-		tests = Collections.unmodifiableList(Arrays.asList(m, m2));
+	List<LineMatcher> matchers = new ArrayList<>();
+	matchers.add(new LineMustNotContainIgnoreCaseMatcher("create database  if not exists"));
+	matchers.add(new LineMustNotStartWithMatcher("USE"));
+	matchers.add(new AndMatcher(new LineMustNotContainMatcher("Host"), new LineMustNotContainMatcher("Database")));
+	matchers.add(new LineMustNotContainIgnoreCaseMatcher("Server version"));
+	matchers.add(new LineMustNotStartWithMatcher("/*!"));
+
+	tests = Collections.unmodifiableList(matchers);
+
+	LineMatcher matcher = new LineMustNotContainIgnoreCaseMatcher(") ENGINE=");
+	LineReplacer replacer = new MatcherLineReplacer(")", matcher);
+	replacers = Collections.unmodifiableList(Arrays.asList(replacer));
+    }
+
+    public static void main(String[] args) {
+	Parameters parms = Parameters.createFrom(args);
+	new MysqlParser(parms).start();
+    }
+
+    public void start() {
+	logger.debug("Start logging with source={} and target={}", parms.getSource(), parms.getTarget());
+	try (BufferedReader input = new BufferedReader(parms.createReader())) {
+	    try (UncheckedBufferedWriter out = new UncheckedBufferedWriter(parms.createWriter())) {
+		input.lines()
+			.filter(this::doIncludeLine)
+			.map(this::doReplaceLine)
+			.forEach(out::appendLineUnchecked);
+	    } catch (IOException e) {
+		logger.error("Unable to write Target: {}", parms.getTarget(), e);
+	    }
+	} catch (IOException e) {
+	    logger.error("Source not found: {}", parms.getSource(), e);
+	}
+    }
+
+    private String doReplaceLine(String line) {
+	for (LineReplacer lineReplacer : replacers) {
+	    if (lineReplacer.isMatch(line)) {
+		return lineReplacer.conditionalReplace(line);
+	    }
+	}
+	return line;
+    }
+
+    private boolean doIncludeLine(String line) {
+	String trimmed = line.trim();
+	Iterator<LineMatcher> iterator = tests.iterator();
+
+	boolean result = true;
+	while (result && iterator.hasNext()) {
+	    result &= iterator.next().test(trimmed);
+	}
+	return result;
+    }
+
+    private class UncheckedBufferedWriter extends BufferedWriter {
+
+	public UncheckedBufferedWriter(Writer out) {
+	    super(out);
 	}
 
-	public static void main(String[] args) {
-		Parameters parms = Parameters.createFrom(args);
-		new MysqlParser(parms).start();
+	public void appendLineUnchecked(CharSequence line) {
+	    try {
+		append(line).append(System.lineSeparator());
+	    } catch (IOException e) {
+		throw new UncheckedIOException("Error writing line \"" + line + "\"", e);
+	    }
 	}
-
-	public void start() {
-		logger.debug("Start logging with source={} and target={}", parms.getSource(), parms.getTarget());
-		try (BufferedReader input = new BufferedReader(parms.createReader())) {
-			try (UncheckedBufferedWriter out = new UncheckedBufferedWriter(parms.createWriter())) {
-				input.lines().filter(this::doIncludeLine).forEach(out::appendLineUnchecked);
-			} catch (IOException e) {
-				logger.error("Unable to write Target: ", parms.getTarget(), e);
-			}
-		} catch (IOException e) {
-			logger.error("Source not found: {}", parms.getSource(), e);
-		}
-	}
-
-	private boolean doIncludeLine(String line) {
-		String trimmed = line.trim();
-		Iterator<LineMatcher> iterator = tests.iterator();
-
-		boolean result = true;
-		while (result && iterator.hasNext()) {
-			result &= iterator.next().test(trimmed);
-		}
-		return result;
-	}
-
-	private class UncheckedBufferedWriter extends BufferedWriter {
-
-		public UncheckedBufferedWriter(Writer out) {
-			super(out);
-		}
-
-		public void appendLineUnchecked(CharSequence line) {
-			try {
-				append(line).append(System.lineSeparator());
-			} catch (IOException e) {
-				throw new UncheckedIOException("Error writing line \"" + line + "\"", e);
-			}
-		}
-	}
+    }
 }
