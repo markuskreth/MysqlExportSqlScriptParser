@@ -6,7 +6,7 @@ public class LineMustNotContainMatcher implements LineMatcher {
 
 	public LineMustNotContainMatcher(String disallowedContent) {
 		super();
-		this.disallowedContent = disallowedContent.toLowerCase();
+		this.disallowedContent = disallowedContent;
 	}
 
 	@Override

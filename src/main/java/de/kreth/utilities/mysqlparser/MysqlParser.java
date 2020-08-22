@@ -24,8 +24,10 @@ public class MysqlParser {
 
 	MysqlParser(Parameters parms) {
 		this.parms = parms;
-		LineMustNotContainMatcher m = new LineMustNotContainMatcher("create database  if not exists");
+		LineMustNotContainIgnoreCaseMatcher m = new LineMustNotContainIgnoreCaseMatcher(
+				"create database  if not exists");
 		LineMustNotStartWithMatcher m2 = new LineMustNotStartWithMatcher("use");
+
 		tests = Collections.unmodifiableList(Arrays.asList(m, m2));
 	}
 
@@ -48,7 +50,7 @@ public class MysqlParser {
 	}
 
 	private boolean doIncludeLine(String line) {
-		String trimmed = line.trim().toLowerCase();
+		String trimmed = line.trim();
 		Iterator<LineMatcher> iterator = tests.iterator();
 
 		boolean result = true;
