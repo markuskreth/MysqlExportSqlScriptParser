@@ -12,12 +12,9 @@ public class AndMatcher implements LineMatcher {
 	@Override
 	public boolean test(String trimmed) {
 
-		boolean result = true;
+		boolean result = false;
 		for (LineMatcher lineMatcher : matchers) {
-			result &= lineMatcher.test(trimmed);
-			if (!result) {
-				break;
-			}
+			result |= lineMatcher.test(trimmed);
 		}
 		return result;
 	}
